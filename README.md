@@ -9,11 +9,13 @@ composer require naveldev/crawler-detection
 ## Usage
 
 ```
-use Crawler\Crawler;
+use Navel\Crawler\Crawler;
 
 $crawler = new Crawler;
 
+// Check for a crawler OR check a custom header by passing a parameter to the function
 $crawler->check();
 
+// Return all the found crawlers
 $crawler->matches();
 ```
