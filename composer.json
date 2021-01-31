@@ -1,6 +1,6 @@
 {
     "name": "naveldev/crawler-detection",
-    "description": "Navel Framework",
+    "description": "PHP Crawler Detection system",
     "license": "Apache-2.0",
     "version": "1.0.4",
     "require": {
