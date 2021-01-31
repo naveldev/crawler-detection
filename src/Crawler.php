@@ -11,6 +11,13 @@ class Crawler
      *
      * @var [type]
      */
+    protected $userHost;
+
+    /**
+     * [protected description]
+     *
+     * @var [type]
+     */
     protected $userAgent;
 
     /**
@@ -39,7 +46,7 @@ class Crawler
      *
      * @var [type]
      */
-    protected $regex;
+    protected $hosts;
 
     /**
      * [protected description]
@@ -61,15 +68,17 @@ class Crawler
      * @param [type] $headers   [description]
      * @param [type] $userAgent [description]
      */
-    public function __construct( array $headers = null, $userAgent = null )
+    public function __construct( array $headers = null, $userAgent = null, $userHost = null )
     {
         $this->fixtures = new Fixtures;
 
-        $this->regex = $this->compileRegex( $this->fixtures->getCrawlers() );
+        $this->hosts = $this->compileRegex( $this->fixtures->getHosts() );
+        $this->crawlers = $this->compileRegex( $this->fixtures->getCrawlers() );
         $this->exclusions = $this->compileRegex( $this->fixtures->getWhitelist() );
 
         $this->setHttpHeaders( $headers );
         $this->setUserAgent( $userAgent );
+        $this->setUserHost( $userHost );
     }
 
     /**
@@ -88,7 +97,7 @@ class Crawler
      *
      * @param [type] $httpHeaders [description]
      */
-    public function setHttpHeaders( $httpHeaders = null )
+    protected function setHttpHeaders( $httpHeaders = null )
     {
         // Use global _SERVER if $httpHeaders aren't defined.
         if ( !is_array( $httpHeaders ) || ! count( $httpHeaders ) ) {
@@ -108,11 +117,23 @@ class Crawler
     }
 
     /**
+     * [setUserHost description]
+     *
+     * @param [type] $host [description]
+     */
+    protected function setUserHost( $host = null )
+    {
+        $host = $_SERVER['HTTP_CF_CONNECTING_IP'] ?? $_SERVER['REMOTE_ADDR'];
+
+        return $this->userHost = $host;
+    }
+
+    /**
      * [setUserAgent description]
      *
      * @param [type] $userAgent [description]
      */
-    public function setUserAgent( $userAgent = null )
+    protected function setUserAgent( $userAgent = null )
     {
         if ( is_null( $userAgent ) ) {
             foreach ( $this->fixtures->getHeaders() as $altHeader ) {
@@ -126,14 +147,58 @@ class Crawler
     }
 
     /**
-     * [check description]
+     * [isCrawler description]
      *
-     * @param  [type] $userAgent [description]
-     * @return [type]            [description]
+     * @param  [type]  $host      [description]
+     * @param  [type]  $userAgent [description]
+     * @return boolean            [description]
      */
-    public function check( $userAgent = null )
+    public function isCrawler( $host = null, $userAgent = null )
     {
-        return $this->isCrawler( $userAgent );
+        if( !$this->dnsSearch( $host ) ) {
+            return true;
+        }
+
+        if( !$this->uaSearch( $userAgent ) ) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * [dnsSearch description]
+     *
+     * @param  [type] $host [description]
+     * @return [type]       [description]
+     */
+    public function dnsSearch( $host = null )
+    {
+        return $this->reverseDnsLookup( $host );
+    }
+
+    /**
+     * [userAgentSearch description]
+     *
+     * @param  [type] $host [description]
+     * @return [type]       [description]
+     */
+    public function uaSearch( $host = null )
+    {
+        return $this->reverseDnsLookup( $host );
+    }
+
+    /**
+     * [dnsLookup description]
+     *
+     * @param  [type] $host [description]
+     * @return [type]       [description]
+     */
+    protected function reverseDnsLookup( $host = null )
+    {
+        $host = trim(gethostbyaddr( $host ?: $this->userHost ));
+
+        return (bool) preg_match("/{$this->hosts}/i", $host, $this->matches);
     }
 
     /**
@@ -142,7 +207,7 @@ class Crawler
      * @param  [type]  $userAgent [description]
      * @return boolean            [description]
      */
-    protected function isCrawler( $userAgent = null )
+    protected function userAgentLookup( $userAgent = null )
     {
         $agent = trim(preg_replace(
             "/{$this->exclusions}/i",
@@ -150,16 +215,16 @@ class Crawler
             $userAgent ?: $this->userAgent
         ));
 
-        if ($agent === '') {
+        if ( $agent === '' ) {
             return false;
         }
 
-        return (bool) preg_match("/{$this->regex}/i", $agent, $this->matches);
+        return (bool) preg_match("/{$this->crawlers}/i", $agent, $this->matches);
     }
 
     /**
      * [matches description]
-     * 
+     *
      * @return [type] [description]
      */
     public function matches()

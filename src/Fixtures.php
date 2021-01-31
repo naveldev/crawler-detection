@@ -1412,6 +1412,16 @@ class Fixtures
     ];
 
     /**
+     * For reverse DNS lookup by IP
+     *
+     * @var array
+     */
+    protected $hosts = [
+        'googlebot.com',
+        'google.com'
+    ];
+
+    /**
      * The client's headers to grab
      *
      * @var array
@@ -1437,6 +1447,11 @@ class Fixtures
     public function getCrawlers()
     {
         return $this->crawlers;
+    }
+
+    public function getHosts()
+    {
+        return $this->hosts;
     }
 
     /**
