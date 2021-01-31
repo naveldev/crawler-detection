@@ -1,7 +1,7 @@
 {
     "name": "naveldev/crawler-detection",
     "description": "Navel Framework",
-    "license": "GNU AFFERO GENERAL PUBLIC LICENSE",
+    "license": "Apache License 2.0",
     "version": "1.0.4",
     "keywords": [
         "laravel"
