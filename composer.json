@@ -3,9 +3,6 @@
     "description": "Navel Framework",
     "license": "Apache License 2.0",
     "version": "1.0.4",
-    "keywords": [
-        "laravel"
-    ],
     "require": {
         "php": "^7.3|^8.0"
     },
