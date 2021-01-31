@@ -3,7 +3,7 @@
 ## Installation
 
 ```
-composer require naviisml/crawler-detection
+composer require naveldev/crawler-detection
 ```
 
 ## Usage
